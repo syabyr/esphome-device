@@ -1,6 +1,6 @@
 esphome:
-  name: &esphomename diningroom_lamp
-  build_path: ./build/diningroom_lamp
+  name: &esphomename livingroomlamp
+  build_path: ./build/livingroomlamp
   platform: ESP8266
   board: esp01_1m
 

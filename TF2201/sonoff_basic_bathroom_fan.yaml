@@ -15,6 +15,9 @@ esphome:
       - fan.turn_on:
           id: bathroom_fan
 
+api:
+  port: 6053
+  reboot_timeout: 0s
 
 # Enable logging
 logger:

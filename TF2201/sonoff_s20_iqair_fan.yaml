@@ -9,6 +9,9 @@ esphome:
   board: esp01_1m
   build_path: build/$devicename
 
+api:
+  port: 6053
+  reboot_timeout: 0s
 
 # Enable logging
 logger:

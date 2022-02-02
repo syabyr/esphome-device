@@ -1,7 +1,7 @@
 substitutions:
   devicename: diningroomlamp
 
-<<: !include secret.yaml
+<<: !include secrets.yaml
 
 esphome:
   name: $devicename

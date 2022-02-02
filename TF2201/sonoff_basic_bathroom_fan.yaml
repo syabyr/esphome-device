@@ -1,7 +1,7 @@
 substitutions:
   devicename: bathroomfan
 
-<<: !include secret.yaml
+<<: !include secrets.yaml
 
 
 esphome:

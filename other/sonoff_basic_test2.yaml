@@ -1,0 +1,33 @@
+substitutions:
+  devicename: test2
+
+<<: !include secret.yaml
+
+esphome:
+  name: $devicename
+  platform: ESP8266
+  board: esp01_1m
+  build_path: build/$devicename
+
+
+# Enable logging
+logger:
+
+
+sensor:
+  - platform: wifi_signal
+    name: "${devicename}_wifi_signal"
+
+output:
+  - platform: gpio
+    id: sonoff_basic_livingroom_light
+    pin:
+      number: GPIO12
+      #inverted: True
+
+light:
+  - platform: binary
+    name: "客厅灯"
+    output: sonoff_basic_livingroom_light
+    restore_mode: RESTORE_DEFAULT_ON
+

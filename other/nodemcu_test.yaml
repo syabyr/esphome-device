@@ -1,0 +1,35 @@
+substitutions:
+  devicename: nodemcu_test
+
+<<: !include secrets.yaml
+
+esphome:
+  name: $devicename
+  platform: ESP8266
+  board: nodemcuv2
+  build_path: build/$devicename
+
+  on_boot:
+    then:
+      - fan.turn_on:
+          id: bathroom_fan
+
+
+
+
+# Enable logging
+logger:
+
+
+
+output:
+  - platform: gpio
+    pin: GPIO12
+    id: bathroom_fan_gpio
+    inverted: False
+
+fan:
+  - platform: binary
+    output: bathroom_fan_gpio
+    name: "浴室排气扇"
+    id: bathroom_fan

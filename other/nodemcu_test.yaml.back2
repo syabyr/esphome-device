@@ -1,0 +1,63 @@
+esphome:
+  name: nodemcu_test
+  platform: ESP8266
+  board: nodemcuv2
+
+wifi:
+  ssid: "TF2201"
+  password: "1234567890"
+
+  # Enable fallback hotspot (captive portal) in case wifi connection fails
+  ap:
+    ssid: "Bath Fan Fallback Hotspot"
+    password: "z9WJLQAhyWgo"
+
+captive_portal:
+
+# Enable logging
+logger:
+
+# Enable Home Assistant API
+api:
+  password: "mybays"
+
+ota:
+  password: "mybays"
+
+#binary_sensor:
+#  - platform: gpio
+#    pin:
+#      number: GPIO0
+#      mode: INPUT_PULLUP
+#      inverted: True
+#    name: "客厅灯按钮"
+#    on_press:
+#      - light.toggle: sonoff_basic_livingroom_light
+#  - platform: status
+#    name: "客厅灯按钮状态"
+
+
+
+output:
+  - platform: gpio
+    id: sonoff_basic_livingroom_light
+    pin:
+      number: GPIO2
+      inverted: True
+
+  # led状态灯没有使用意义,屏蔽掉
+  #- platform: esp8266_pwm
+  #  id: sonoff_green_led
+  #  pin:
+  #    number: GPIO13
+  #    inverted: True
+
+light:
+  - platform: binary
+    name: "客厅灯"
+    output: sonoff_basic_livingroom_light
+    #restore_mode: RESTORE_DEFAULT_ON
+  # led状态灯没有使用意义,屏蔽掉
+  #- platform: monochromatic
+  #  name: "Sonoff Basic Green LED"
+  #  output: sonoff_green_led

@@ -1,0 +1,93 @@
+esphome:
+  name: rgbww1
+  platform: ESP8266
+  board: esp8285
+
+wifi:
+  ssid: "TF2201"
+  password: "1234567890"
+
+# Enable logging
+logger:
+
+# Enable Home Assistant API
+api:
+  password: "mybays"
+
+ota:
+  password: "mybays"
+
+binary_sensor:
+  - platform: gpio
+    pin:
+      number: GPIO0
+      mode: INPUT_PULLUP
+      inverted: True
+    name: "Button"
+    on_press:
+      - switch.toggle: relay
+  - platform: status
+    name: "Status"
+
+
+switch:
+  - platform: gpio
+    name: "Relay"
+    pin: GPIO12
+    restore_mode: RESTORE_DEFAULT_ON
+    id: relay
+
+
+output:
+  # Register the green LED as a dimmable output ....
+  - platform: esp8266_pwm
+    id: green_led
+    pin:
+      number: GPIO2
+      inverted: True
+
+  - platform: esp8266_pwm
+    id: red
+    pin:
+      number: GPIO14
+      inverted: True
+
+  - platform: esp8266_pwm
+    id: green
+    pin:
+      number: GPIO12
+      inverted: True
+
+  - platform: esp8266_pwm
+    id: blue
+    pin:
+      number: GPIO13
+      inverted: True
+
+  - platform: esp8266_pwm
+    id: cold_white
+    pin:
+      number: GPIO15
+      inverted: True
+
+  - platform: esp8266_pwm
+    id: warm_white
+    pin:
+      number: GPIO5
+      inverted: True
+light:
+  # ... and then make a light out of it.
+  - platform: monochromatic
+    name: "Green LED"
+    output: green_led
+
+  - platform: rgbww
+    name: "Livingroom Lights"
+    red: red
+    green: green
+    blue: blue
+    cold_white: cold_white
+    warm_white: warm_white
+    cold_white_color_temperature: 6536 K
+    warm_white_color_temperature: 2000 K
+

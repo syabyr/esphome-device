@@ -1,0 +1,93 @@
+substitutions:
+  devicename: bedroom_sensor
+
+<<: !include secrets.yaml
+
+esphome:
+  name: $devicename
+  platform: ESP8266
+  board: esp12e
+  build_path: build/$devicename
+
+
+# Enable logging
+logger:
+
+i2c:
+  sda: 4
+  scl: 5
+  scan: True
+  id: bus_a
+
+uart:
+  rx_pin: GPIO3
+  tx_pin: GPIO1
+  baud_rate: 9600
+
+sensor:
+  - platform: bh1750
+    name: "BH1750"
+    address: 0x23
+    update_interval: 30s
+  - platform: bme280
+    temperature:
+      name: "BME280 Temperature"
+      oversampling: 16x
+    pressure:
+      name: "BME280 Pressure"
+    humidity:
+      name: "BME280 Humidity"
+    address: 0x77
+    update_interval: 30s
+
+  - platform: pmsx003
+    type: PMS5003ST
+    pm_1_0:
+      name: "Particulate Matter <1.0µm Concentration"
+    pm_2_5:
+      name: "Particulate Matter <2.5µm Concentration"
+    pm_10_0:
+      name: "Particulate Matter <10.0µm Concentration"
+    temperature:
+      name: "PMS5003ST Temperature"
+    humidity:
+      name: "PMS5003ST Humidity"
+    formaldehyde:
+      name: "PMS5003ST Formaldehyde"
+
+
+  - platform: wifi_signal
+    name: "${devicename}_wifi_signal"
+
+binary_sensor:
+  - platform: gpio
+    pin:
+      number: GPIO0
+      mode: INPUT_PULLUP
+      inverted: True
+    name: "IQAir Button"
+    on_press:
+      - switch.toggle: relay
+  - platform: status
+    name: "IQAir Status"
+
+
+switch:
+  - platform: gpio
+    name: "IQAir Relay"
+    pin: GPIO12
+    restore_mode: RESTORE_DEFAULT_ON
+    id: relay
+output:
+  # Register the green LED as a dimmable output ....
+  - platform: esp8266_pwm
+    id: iqair_green_led
+    pin:
+      number: GPIO13
+      inverted: True
+
+light:
+  # ... and then make a light out of it.
+  - platform: monochromatic
+    name: "IQAir Green LED"
+    output: iqair_green_led

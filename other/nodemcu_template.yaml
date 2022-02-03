@@ -1,0 +1,77 @@
+substitutions:
+  devicename: nodemcu_template
+
+esphome:
+  name: $devicename
+  platform: ESP8266
+  board: nodemcuv2
+  build_path: build/$devicename
+
+wifi:
+  ssid: "TF2201"
+  password: "1234567890"
+
+  # Enable fallback hotspot (captive portal) in case wifi connection fails
+  ap:
+    ssid: "Nodemcu Fallback Hotspot"
+    password: "1234567890"
+
+captive_portal:
+
+# Enable logging
+logger:
+
+# Enable Home Assistant API
+api:
+  password: "mybays"
+
+ota:
+  password: "mybays"
+
+
+sensor:
+  - platform: uptime
+    name: "${devicename} uptime"
+  - platform: wifi_signal
+    name: "${devicename} wifi_signal"
+
+binary_sensor:
+  - platform: gpio
+    pin:
+      number: GPIO0
+      mode: INPUT_PULLUP
+      inverted: True
+    name: "nodemcu_test Button"
+    on_press:
+      - switch.toggle: relay
+  - platform: status
+    name: "Sonoff Basic Status"
+
+switch:
+  - platform: gpio
+    name: "Sonoff Basic Relay"
+    pin: GPIO12
+    restore_mode: RESTORE_DEFAULT_ON
+    id: relay
+
+output:
+  # Register the green LED as a dimmable output ....
+  #- platform: esp8266_pwm
+  - platform: gpio
+    id: nodemcu_blue_led
+    pin:
+      number: GPIO2
+      inverted: True
+
+light:
+  # ... and then make a light out of it.
+  #- platform: monochromatic
+  - platform: binary
+    name: "nodemcu蓝灯"
+    output: nodemcu_blue_led
+
+web_server:
+  port: 8080
+  css_url: https://esphome.io/_static/webserver-v1.min.css
+  js_url: https://esphome.io/_static/webserver-v1.min.js
+

@@ -1,27 +1,21 @@
 esphome:
-  name: &esphomename bath_fan
-  build_path: ./build/bath_fan
+  name: sonoff_s20
   platform: ESP8266
   board: esp01_1m
 
 wifi:
-  ssid: !secret wifi_ssid
-  password: !secret wifi_password
-
-  # Enable fallback hotspot (captive portal) in case wifi connection fails
-  ap:
-    ssid: *esphomename
-    password: !secret ap_password
+  ssid: "TF2201"
+  password: "1234567890"
 
 # Enable logging
 logger:
 
 # Enable Home Assistant API
 api:
-  password: !secret api_key
+  password: 'mybays'
 
 ota:
-  password: !secret ota_key
+  password: 'mybays'
 
 binary_sensor:
   - platform: gpio
@@ -29,23 +23,23 @@ binary_sensor:
       number: GPIO0
       mode: INPUT_PULLUP
       inverted: True
-    name: "Sonoff Basic Button"
+    name: "Sonoff S20 Button"
     on_press:
       - switch.toggle: relay
   - platform: status
-    name: "Sonoff Basic Status"
+    name: "Sonoff S20 Status"
+
 
 switch:
   - platform: gpio
-    name: "Sonoff Basic Relay"
+    name: "Sonoff S20 Relay"
     pin: GPIO12
     restore_mode: RESTORE_DEFAULT_ON
     id: relay
-
 output:
   # Register the green LED as a dimmable output ....
   - platform: esp8266_pwm
-    id: sonoff_green_led
+    id: s20_green_led
     pin:
       number: GPIO13
       inverted: True
@@ -53,6 +47,5 @@ output:
 light:
   # ... and then make a light out of it.
   - platform: monochromatic
-    name: "Sonoff Basic Green LED"
-    output: sonoff_green_led
-
+    name: "Sonoff S20 Green LED"
+    output: s20_green_led

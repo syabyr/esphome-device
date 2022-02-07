@@ -1,0 +1,307 @@
+substitutions:
+  devicename: "phicomm_dc2"
+
+esphome:
+  name: $devicename
+  build_path: build/$devicename
+
+  on_boot:
+    then:
+      - if:
+          condition:
+            wifi.connected:
+          then:
+            - logger.log: wifi is connected!
+            #- switch.turn_on: Status_led
+
+esp8266:
+  #platform: ESP8266
+  board: esp01_1m
+
+
+
+<<: !include secrets.yaml
+
+api:
+
+
+
+
+#------- 接入CAT9554 IO扩展芯片 -------
+i2c:
+  sda: GPIO3
+  scl: GPIO12
+  scan: false
+  #frequency: 20kHz
+
+
+external_components:
+  - source:
+      type: local
+      path: custom_components
+    components: [ cat9554 ]
+
+#------- 接入CAT9554的扩展IO -------
+cat9554:
+  - id: 'cat9554_hub'
+    address: 0x20
+    #irq_pin: GPIO4
+
+#------- 接入CSE7766电量传感器 -------
+uart:
+  rx_pin: GPIO13
+  baud_rate: 4800
+
+# Enable logging
+# ref: https://esphome.io/components/logger.html
+logger:
+  level: DEBUG #VERY_VERBOSE
+  baud_rate: 0 #disable logging over uart
+
+sensor:
+  - platform: cse7766
+    voltage:
+      name: "${devicename} Voltage"
+    current:
+      name: "${devicename} Current"
+    power:
+      name: "${devicename} Power"
+    energy:
+      name: "${devicename} Energy"
+    update_interval: 1s
+  - platform: uptime
+    name: "${devicename} uptime"
+  - platform: wifi_signal
+    name: "${devicename} wifi_signal"
+
+binary_sensor:
+  - platform: status
+    #设备状态
+    name: "${devicename} status"
+    #是否对外隐藏（true/false）
+    internal: false
+  - platform: gpio
+    #第一个按钮(内部引用，对外隐藏)
+    name: "${devicename} key1"
+    #是否对外隐藏（true/false）
+    internal: true
+    pin:
+      cat9554: cat9554_hub
+      # Use pin number 0
+      number: 0
+      mode: INPUT
+    filters:
+      - invert:
+      - delayed_on: 50ms
+      - delayed_off: 50ms
+    on_click:
+      - min_length: 50ms
+        max_length: 500ms
+        then:
+          - switch.toggle: switch1
+  - platform: gpio
+    #第二个按钮(内部引用，对外隐藏)
+    name: "${devicename} key2"
+    #是否对外隐藏（true/false）
+    internal: true
+    pin:
+      cat9554: cat9554_hub
+      # Use pin number 1
+      number: 1
+      mode: INPUT
+    filters:
+      - invert:
+      - delayed_on: 50ms
+      - delayed_off: 50ms
+    on_click:
+      - min_length: 50ms
+        max_length: 500ms
+        then:
+          - switch.toggle: switch2
+  - platform: gpio
+    #第三个按钮(内部引用，对外隐藏)
+    name: "${devicename} key3"
+    #是否对外隐藏（true/false）
+    internal: true
+    pin:
+      cat9554: cat9554_hub
+      # Use pin number 2
+      number: 2
+      mode: INPUT
+    filters:
+      - invert:
+      - delayed_on: 50ms
+      - delayed_off: 50ms
+    on_click:
+      - min_length: 50ms
+        max_length: 500ms
+        then:
+          - switch.toggle: switch3
+  - platform: gpio
+    #总开关(内部引用，对外隐藏)
+    name: "${devicename} key0"
+    #是否对外隐藏（true/false）
+    id: key0
+    internal: true
+    pin:
+      number: GPIO16
+      mode: INPUT_PULLDOWN_16
+    filters:
+      - invert:
+      - delayed_on: 50ms
+      - delayed_off: 50ms
+    on_click:
+      - min_length: 50ms
+        max_length: 500ms
+        then:
+          - switch.toggle: switch0
+  #影子
+  - platform: template
+    name: "shadow1"
+    id: shadow1
+    internal: true
+  - platform: template
+    name: "shadow2"
+    id: shadow2
+    internal: true
+  - platform: template
+    name: "shadow3"
+    id: shadow3
+    internal: true
+
+#WiFi状态灯
+status_led:
+  pin: GPIO0
+
+
+output:
+
+  - platform: gpio
+    #继电器3(内部引用，对外隐藏)
+    id: realy3
+    #设置启动优先级到IO级，解决断电恢复被重置的问题
+    setup_priority: 900
+    pin:
+      cat9554: cat9554_hub
+      # Use pin number 4
+      number: 4
+      mode: OUTPUT
+      inverted: false
+  - platform: gpio
+    #继电器2(内部引用，对外隐藏)
+    id: realy2
+    setup_priority: 900
+    pin:
+      cat9554: cat9554_hub
+      # Use pin number 5
+      number: 5
+      mode: OUTPUT
+      inverted: false
+  - platform: gpio
+    #继电器1(内部引用，对外隐藏)
+    id: realy1
+    setup_priority: 900
+    pin:
+      cat9554: cat9554_hub
+      # Use pin number 6
+      number: 6
+      mode: OUTPUT
+      inverted: false
+  - platform: gpio
+    #总继电器(内部引用，对外隐藏)
+    id: realy0
+    #设置启动优先级到IO级，解决断电恢复被重置的问题
+    setup_priority: 900
+    pin:
+      cat9554: cat9554_hub
+      # Use pin number 7
+      number: 7
+      mode: OUTPUT
+      inverted: false
+
+switch:
+  - platform: output
+    #总开关(显示为一个开关)
+    name: "${devicename} switch0"
+    output: realy0
+    id: switch0
+    on_turn_on:
+      - switch.turn_on: LOGO_light
+      - lambda: |-
+          if (id(shadow1).state) {
+            id(switch1).turn_on();
+            id(shadow1).publish_state(false);
+          }
+          if (id(shadow2).state) {
+            id(switch2).turn_on();
+            id(shadow2).publish_state(false);
+          }
+          if (id(shadow3).state) {
+            id(switch3).turn_on();
+            id(shadow3).publish_state(false);
+          }
+    on_turn_off:
+      - switch.turn_off: LOGO_light
+      - lambda: |-
+          if (id(switch1).state) {
+            id(switch1).turn_off();
+            id(shadow1).publish_state(true);
+          }
+          if (id(switch2).state) {
+            id(switch2).turn_off();
+            id(shadow2).publish_state(true);
+          }
+          if (id(switch3).state) {
+            id(switch3).turn_off();
+            id(shadow3).publish_state(true);
+          }
+  - platform: output
+    #开关1(显示为一个开关)
+    name: "${devicename} switch1"
+    output: realy1
+    id: switch1
+    on_turn_on:
+      - lambda: |-
+          if (!id(switch0).state) {
+            id(switch0).turn_on();
+          }
+  - platform: output
+    #开关2(显示为一个开关)
+    name: "${devicename} switch2"
+    output: realy2
+    id: switch2
+    on_turn_on:
+      - lambda: |-
+          if (!id(switch0).state) {
+            id(switch0).turn_on();
+          }
+  - platform: output
+    #开关3(显示为一个开关)
+    name: "${devicename} switch3"
+    output: realy3
+    id: switch3
+    on_turn_on:
+      - lambda: |-
+          if (!id(switch0).state) {
+            id(switch0).turn_on();
+          }
+  - platform: gpio
+    pin: GPIO14
+    #LOGO灯
+    name: "${devicename} LOGO_light"
+    id: LOGO_light
+    internal: false
+    inverted: true
+
+#  - platform: gpio
+#    pin: GPIO0
+    #wifi状态灯
+#    name: "${devicename} Status_led"
+#    id: Status_led
+#    internal: false
+#    inverted: false
+#mqtt:
+#  broker: 202.1.1.1
+#  discovery: true
+  
+

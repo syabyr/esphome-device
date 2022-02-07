@@ -24,11 +24,6 @@ esp8266:
 
 api:
 
-# Enable logging
-# ref: https://esphome.io/components/logger.html
-logger:
-  level: DEBUG #makes uart stream available in esphome logstream
-  baud_rate: 0 #disable logging over uart
 
 
 
@@ -52,10 +47,16 @@ cat9554:
     address: 0x20
     #irq_pin: GPIO4
 
-
+#------- 接入CSE7766电量传感器 -------
 uart:
   rx_pin: GPIO13
   baud_rate: 4800
+
+# Enable logging
+# ref: https://esphome.io/components/logger.html
+logger:
+  level: DEBUG #VERY_VERBOSE
+  baud_rate: 0 #disable logging over uart
 
 sensor:
   - platform: cse7766
@@ -74,25 +75,11 @@ sensor:
     name: "${devicename} wifi_signal"
 
 binary_sensor:
-  - platform: gpio
-    #总开关(内部引用，对外隐藏)
-    name: "${devicename} key0"
+  - platform: status
+    #设备状态
+    name: "${devicename} status"
     #是否对外隐藏（true/false）
-    id: key0
-    internal: true
-    pin:
-      number: GPIO16
-      mode: INPUT_PULLDOWN_16
-    filters:
-      - invert:
-      - delayed_on: 50ms
-      - delayed_off: 50ms
-    on_click:
-      - min_length: 50ms
-        max_length: 500ms
-        then:
-          - switch.toggle: switch0
-
+    internal: false
   - platform: gpio
     #第一个按钮(内部引用，对外隐藏)
     name: "${devicename} key1"
@@ -150,6 +137,24 @@ binary_sensor:
         max_length: 500ms
         then:
           - switch.toggle: switch3
+  - platform: gpio
+    #总开关(内部引用，对外隐藏)
+    name: "${devicename} key0"
+    #是否对外隐藏（true/false）
+    id: key0
+    internal: true
+    pin:
+      number: GPIO16
+      mode: INPUT_PULLDOWN_16
+    filters:
+      - invert:
+      - delayed_on: 50ms
+      - delayed_off: 50ms
+    on_click:
+      - min_length: 50ms
+        max_length: 500ms
+        then:
+          - switch.toggle: switch0
   #影子
   - platform: template
     name: "shadow1"
@@ -170,12 +175,7 @@ status_led:
 
 
 output:
-  - platform: gpio
-    #继电器3(内部引用，对外隐藏)
-    id: realy0
-    #设置启动优先级到IO级，解决断电恢复被重置的问题
-    setup_priority: 900
-    pin: GPIO14
+
   - platform: gpio
     #继电器3(内部引用，对外隐藏)
     id: realy3
@@ -205,6 +205,17 @@ output:
       cat9554: cat9554_hub
       # Use pin number 6
       number: 6
+      mode: OUTPUT
+      inverted: false
+  - platform: gpio
+    #总继电器(内部引用，对外隐藏)
+    id: realy0
+    #设置启动优先级到IO级，解决断电恢复被重置的问题
+    setup_priority: 900
+    pin:
+      cat9554: cat9554_hub
+      # Use pin number 7
+      number: 7
       mode: OUTPUT
       inverted: false
 

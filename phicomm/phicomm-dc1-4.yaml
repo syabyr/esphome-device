@@ -1,5 +1,5 @@
 substitutions:
-  devicename: "phicomm_dc4"
+  devicename: "phicomm_dc1_4"
 
 esphome:
   name: $devicename

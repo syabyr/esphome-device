@@ -1,4 +1,4 @@
 substitutions:
-  devicename: "phicomm_dc1"
+  devicename: "phicomm_dc1_1"
 
 <<: !include phicomm-dc1.yaml

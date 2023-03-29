@@ -36,5 +36,6 @@ output:
 fan:
   - platform: binary
     output: bathroom_fan_gpio
+    restore_mode: RESTORE_DEFAULT_ON
     name: "浴室排气扇"
     id: bathroom_fan

@@ -40,6 +40,7 @@ pca9554:
 uart:
   rx_pin: GPIO13
   baud_rate: 4800
+  parity: EVEN
 
 # Enable logging
 # ref: https://esphome.io/components/logger.html
@@ -57,7 +58,7 @@ sensor:
       name: "${devicename} Power"
     energy:
       name: "${devicename} Energy"
-    update_interval: 1s
+    #update_interval: 1s
   - platform: uptime
     name: "${devicename} uptime"
   - platform: wifi_signal
